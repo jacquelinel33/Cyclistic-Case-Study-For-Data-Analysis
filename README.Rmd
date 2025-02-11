@@ -1,7 +1,9 @@
 
 ---
 title: "Cyclistic Case Study"
-output:github_document
+output:
+  github_document:
+    html_preview: false
 date: "2025-02-06"
 ---
 
