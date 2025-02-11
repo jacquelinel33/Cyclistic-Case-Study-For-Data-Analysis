@@ -1,8 +1,7 @@
 
 ---
 title: "Cyclistic Case Study"
-output:
-  output=github_document
+output:github_document
 date: "2025-02-06"
 ---
 
