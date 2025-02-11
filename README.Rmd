@@ -7,6 +7,12 @@ output:
 date: "2025-02-06"
 ---
 
+```{r setup, include=FALSE}
+library(knitr)
+
+# Automatically save plots in the "plots/" folder
+knitr::opts_chunk$set(fig.path = "plots/", fig.width = 6, fig.height = 4, echo = TRUE)
+```
 
 ## Introduction
 This capstone project is the final requirement for the Google Data Analytics course, featuring a fictional bike-share company based in Chicago called Cyclistic. The goal of this analysis is to support Cyclist's marketing team in developing a strategy to convert casual riders into annual members. This study aims to identify key differences in how casual riders and annual members use Cyclistic bikes. The data analysis process—Ask, Prepare, Process, Analyze, Share, and Act—will guide this project. The analysis will be conducted using R for data cleaning, exploration, and visualization.
@@ -25,7 +31,7 @@ The final findings will be presented to the Marketing Director and the Cyclistic
 ## Prepare
 
 load packages
-```{r}
+```{r, echo=TRUE, results="hide"}
 library(tidyverse)
 library(lubridate)
 library(ggplot2)
@@ -38,7 +44,7 @@ library(scales)
 ```
 <br>
 Load data frames. I will be using the most recent data from the last 12 months at the time of this report. 
-```{r}
+```{r, echo=TRUE, results="hide"}
 JAN_2024 <- read_csv("Data/202401-divvy-tripdata.csv")
 FEB_2024 <- read_csv("Data/202402-divvy-tripdata.csv")
 MAR_2024 <- read_csv("Data/202403-divvy-tripdata.csv")
@@ -228,10 +234,10 @@ ggplot(top_stations, aes(x = reorder(start_station_name, station_count), y = sta
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-Most popular bike types for all memebers are the electric bikes followed by classic bikes. Electric scooters are not that popular but will need to investigate if this is due to availability. 
+Most popular bike types for all members are the electric bikes followed by classic bikes. Electric scooters are not that popular but will need to investigate if this is due to availability. 
 ```{r}
 #Barchart of bike type usage between users
-ggplot(bike_type, aes(x = rideable_type, y = count, fill = member_casual)) +
+bike_type_plot <- ggplot(bike_type, aes(x = rideable_type, y = count, fill = member_casual)) +
   geom_col() +
   scale_y_continuous(labels = comma) +
   facet_wrap(~member_casual) + 
@@ -241,6 +247,10 @@ ggplot(bike_type, aes(x = rideable_type, y = count, fill = member_casual)) +
        fill = "User Type")+
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("plots/bike_type_usage.png", plot = bike_type_plot, width = 6, height = 4, dpi = 300)
+
+bike_type_plot
 ```
 
 

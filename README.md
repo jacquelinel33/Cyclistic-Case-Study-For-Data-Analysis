@@ -666,7 +666,7 @@ ggplot(ride_time_month, aes(x = ride_month, y = mean, color = member_casual, gro
     ## Don't know how to automatically pick scale for object of type <difftime>.
     ## Defaulting to continuous.
 
-![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](plots/unnamed-chunk-16-1.png)<!-- -->
 
 Although members are taking shorter rides, they are taking more rides
 than casual users. Number of rides increase for all users with the
@@ -685,7 +685,7 @@ Jan. 
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](plots/unnamed-chunk-17-1.png)<!-- -->
 
 On a weekly basis, members take more rides on the weekday and casual
 members take more rides on the weekends.
@@ -702,7 +702,7 @@ members take more rides on the weekends.
    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](plots/unnamed-chunk-18-1.png)<!-- -->
 
 The top 20 start stations for casual members show they are starting
 their rides around popular tourist areas.
@@ -721,15 +721,15 @@ ggplot(top_stations, aes(x = reorder(start_station_name, station_count), y = sta
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](plots/unnamed-chunk-19-1.png)<!-- -->
 
-Most popular bike types for all memebers are the electric bikes followed
+Most popular bike types for all members are the electric bikes followed
 by classic bikes. Electric scooters are not that popular but will need
 to investigate if this is due to availability.
 
 ``` r
 #Barchart of bike type usage between users
-ggplot(bike_type, aes(x = rideable_type, y = count, fill = member_casual)) +
+bike_type_plot <- ggplot(bike_type, aes(x = rideable_type, y = count, fill = member_casual)) +
   geom_col() +
   scale_y_continuous(labels = comma) +
   facet_wrap(~member_casual) + 
@@ -739,9 +739,13 @@ ggplot(bike_type, aes(x = rideable_type, y = count, fill = member_casual)) +
        fill = "User Type")+
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("plots/bike_type_usage.png", plot = bike_type_plot, width = 6, height = 4, dpi = 300)
+
+bike_type_plot
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](plots/unnamed-chunk-20-1.png)<!-- -->
 
 # Recommendation
 
