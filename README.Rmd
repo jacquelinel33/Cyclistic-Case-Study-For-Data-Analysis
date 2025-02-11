@@ -29,7 +29,7 @@ The final findings will be presented to the Marketing Director and the Cyclistic
 ## Prepare
 
 load packages
-```{r, echo=TRUE, results="hide"}
+```{r message=FALSE}
 library(tidyverse)
 library(lubridate)
 library(ggplot2)
@@ -42,7 +42,7 @@ library(scales)
 ```
 <br>
 Load data frames. I will be using the most recent data from the last 12 months at the time of this report. 
-```{r, echo=TRUE, results="hide"}
+```{r message=FALSE}
 JAN_2024 <- read_csv("Data/202401-divvy-tripdata.csv")
 FEB_2024 <- read_csv("Data/202402-divvy-tripdata.csv")
 MAR_2024 <- read_csv("Data/202403-divvy-tripdata.csv")

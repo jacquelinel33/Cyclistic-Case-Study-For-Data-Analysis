@@ -388,173 +388,29 @@ the Cyclistic Executive Team to inform strategic decisions.</p>
 <div id="prepare" class="section level2">
 <h2>Prepare</h2>
 <p>load packages</p>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.4     ✔ readr     2.1.5
-## ✔ forcats   1.0.0     ✔ stringr   1.5.1
-## ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
-## ✔ lubridate 1.9.4     ✔ tidyr     1.3.1
-## ✔ purrr     1.0.2     
-## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()
-## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-<pre class="r"><code>library(lubridate)
+<pre class="r"><code>library(tidyverse)
+library(lubridate)
 library(ggplot2)
 library(readr)
-library(janitor)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;janitor&#39;
-## 
-## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     chisq.test, fisher.test</code></pre>
-<pre class="r"><code>library(geosphere)
+library(janitor)
+library(geosphere)
 library(dplyr)
-library(pastecs)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;pastecs&#39;
-## 
-## The following objects are masked from &#39;package:dplyr&#39;:
-## 
-##     first, last
-## 
-## The following object is masked from &#39;package:tidyr&#39;:
-## 
-##     extract</code></pre>
-<pre class="r"><code>library(scales)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;scales&#39;
-## 
-## The following object is masked from &#39;package:purrr&#39;:
-## 
-##     discard
-## 
-## The following object is masked from &#39;package:readr&#39;:
-## 
-##     col_factor</code></pre>
+library(pastecs)
+library(scales)</code></pre>
 <p><br> Load data frames. I will be using the most recent data from the
 last 12 months at the time of this report.</p>
-<pre class="r"><code>JAN_2024 &lt;- read_csv(&quot;Data/202401-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 144873 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>FEB_2024 &lt;- read_csv(&quot;Data/202402-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 223164 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>MAR_2024 &lt;- read_csv(&quot;Data/202403-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 301687 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>APR_2024 &lt;- read_csv(&quot;Data/202404-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 415025 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>MAY_2024 &lt;- read_csv(&quot;Data/202405-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 609493 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>JUN_2024 &lt;- read_csv(&quot;Data/202406-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 710721 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>JUL_2024 &lt;- read_csv(&quot;Data/202407-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 748962 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>AUG_2024 &lt;- read_csv(&quot;Data/202408-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 755639 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>SEP_2024 &lt;- read_csv(&quot;Data/202409-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 821276 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>NOV_2024 &lt;- read_csv(&quot;Data/202411-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 335075 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>OCT_2024 &lt;- read_csv(&quot;Data/202410-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 616281 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>DEC_2024 &lt;- read_csv(&quot;Data/202412-divvy-tripdata.csv&quot;)</code></pre>
-<pre><code>## Rows: 178372 Columns: 13
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-## dbl  (4): start_lat, start_lng, end_lat, end_lng
-## dttm (2): started_at, ended_at
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>JAN_2024 &lt;- read_csv(&quot;Data/202401-divvy-tripdata.csv&quot;)
+FEB_2024 &lt;- read_csv(&quot;Data/202402-divvy-tripdata.csv&quot;)
+MAR_2024 &lt;- read_csv(&quot;Data/202403-divvy-tripdata.csv&quot;)
+APR_2024 &lt;- read_csv(&quot;Data/202404-divvy-tripdata.csv&quot;)
+MAY_2024 &lt;- read_csv(&quot;Data/202405-divvy-tripdata.csv&quot;)
+JUN_2024 &lt;- read_csv(&quot;Data/202406-divvy-tripdata.csv&quot;)
+JUL_2024 &lt;- read_csv(&quot;Data/202407-divvy-tripdata.csv&quot;)
+AUG_2024 &lt;- read_csv(&quot;Data/202408-divvy-tripdata.csv&quot;)
+SEP_2024 &lt;- read_csv(&quot;Data/202409-divvy-tripdata.csv&quot;)
+NOV_2024 &lt;- read_csv(&quot;Data/202411-divvy-tripdata.csv&quot;)
+OCT_2024 &lt;- read_csv(&quot;Data/202410-divvy-tripdata.csv&quot;)
+DEC_2024 &lt;- read_csv(&quot;Data/202412-divvy-tripdata.csv&quot;)</code></pre>
 </div>
 <div id="process" class="section level2">
 <h2>Process</h2>
