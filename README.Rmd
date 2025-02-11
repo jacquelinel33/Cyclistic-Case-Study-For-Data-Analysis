@@ -1,0 +1,256 @@
+
+---
+title: "Cyclistic Case Study"
+output:
+  html_document: default
+  pdf_document: default
+date: "2025-02-06"
+---
+
+
+## Introduction
+This capstone project is the final requirement for the Google Data Analytics course, featuring a fictional bike-share company based in Chicago called Cyclistic. The goal of this analysis is to support Cyclist's marketing team in developing a strategy to convert casual riders into annual members. This study aims to identify key differences in how casual riders and annual members use Cyclistic bikes. The data analysis process—Ask, Prepare, Process, Analyze, Share, and Act—will guide this project. The analysis will be conducted using R for data cleaning, exploration, and visualization.
+
+## Ask
+Cyclistic aims to understand how annual members and casual riders differ in their usage patterns. Annual members are currently more profitable than casual riders, presenting an opportunity for growth through targeted marketing strategies.
+
+This analysis seeks to:
+
+- Identify usage patterns, trip behaviors, and trends among casual riders and annual members
+- Analyze 12 months of historical bike-share data to uncover key insights
+- Provide data-driven recommendations to support the marketing team’s goal of increasing annual memberships
+
+The final findings will be presented to the Marketing Director and the Cyclistic Executive Team to inform strategic decisions.
+
+## Prepare
+
+load packages
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(readr)
+library(janitor)
+library(geosphere)
+library(dplyr)
+library(pastecs)
+library(scales)
+```
+<br>
+Load data frames. I will be using the most recent data from the last 12 months at the time of this report. 
+```{r}
+JAN_2024 <- read_csv("Data/202401-divvy-tripdata.csv")
+FEB_2024 <- read_csv("Data/202402-divvy-tripdata.csv")
+MAR_2024 <- read_csv("Data/202403-divvy-tripdata.csv")
+APR_2024 <- read_csv("Data/202404-divvy-tripdata.csv")
+MAY_2024 <- read_csv("Data/202405-divvy-tripdata.csv")
+JUN_2024 <- read_csv("Data/202406-divvy-tripdata.csv")
+JUL_2024 <- read_csv("Data/202407-divvy-tripdata.csv")
+AUG_2024 <- read_csv("Data/202408-divvy-tripdata.csv")
+SEP_2024 <- read_csv("Data/202409-divvy-tripdata.csv")
+NOV_2024 <- read_csv("Data/202411-divvy-tripdata.csv")
+OCT_2024 <- read_csv("Data/202410-divvy-tripdata.csv")
+DEC_2024 <- read_csv("Data/202412-divvy-tripdata.csv")
+```
+
+## Process
+
+Compares columns names/type across multiple data frames. This confirms that the column names and data types are consistent across all data frames used. 
+```{r}
+compare_df_cols(JAN_2024, FEB_2024, MAR_2024, APR_2024, MAY_2024, JUN_2024, JUL_2024, AUG_2024, SEP_2024, OCT_2024, NOV_2024, DEC_2024)
+```
+<br>
+Merge all 12 data frames for 2024 together. 
+```{r}
+#merge 2024 data frames together
+merged_2024 <- bind_rows(JAN_2024, FEB_2024, MAR_2024, APR_2024, MAY_2024, JUN_2024, JUL_2024, AUG_2024, SEP_2024, OCT_2024, NOV_2024, DEC_2024)
+```
+<br>
+Count the number of n/a values in each column. This results in about 18-19% of missing data from station names and station id. I will not be removing the data because it is non-essential data for this analysis that will mainly focus on ride patterns rather than specific stations. 
+```{r}
+#count n/a values in column
+colSums(is.na(merged_2024))
+```
+<br>
+Add column to calculate a trips ride time in minutes by finding the time difference between started_at and ended_at column. 
+```{r}
+merged_2024 <- merged_2024 %>%
+  distinct() %>% #remove duplicates
+  mutate(ride_time_min = difftime(ended_at, started_at, units = "min")) %>%  #add column that calculates the ride time in minutes
+  arrange(desc(ride_time_min)) %>% 
+  mutate(day_of_week = wday(started_at, label = TRUE, abbr = FALSE)) %>% #add date_of_week column 
+  mutate(ride_month = month(started_at, label = TRUE, abbr = FALSE)) #add ride_month column 
+```
+
+#remove negative values in ride_time_min column and ride times greater than 24 hrs.
+```{r}
+#remove negative values in ride_time_min column and ride times greater than 24 hrs.
+merged_2024 <- merged_2024 %>%  
+  filter(ride_time_min > 0, ride_time_min <= 1440)
+```
+
+# Analyze
+Perform description analysis on ride_time_min column across all users.
+
+- Minimum ride time is 0. This demonstrates that users are quickly un-docking and re-docking bikes without starting a ride. 
+- Max ride time is 1439 min. Rides longer than 1440 min (24 hrs) have been removed from the data.
+- Median ride time is 9.70 min. Many users are taking shorter trips. 
+- Mean is 15.40 which is larger than the medium. Data is right skewed with users with very long ride times. 
+```{r}
+round(stat.desc(merged_2024$ride_time_min), 2)
+```
+<br>
+Perform descriptive statistical analysis on ride_time_min column by user type.
+
+- Total Rides: Members make up 63.3% of total rides with 3,707,005 rides versus 2,145,244 rides for casual users. 
+- Casual riders take longer rides than members with a higher mean (12.02) and median (20.93 min) compared to members.
+- Casual riders have a higher standard deviation (42.46 min), meaning their ride times vary widely.
+```{r}
+# Descriptive statistics for members
+round(stat.desc(merged_2024$ride_time_min[merged_2024$member_casual == "member"]),2)
+
+# Descriptive statistics for casual users
+round(stat.desc(merged_2024$ride_time_min[merged_2024$member_casual == "casual"]), 2)
+```
+
+```{r}
+#calculate avg ride_time by month and user type
+ride_time_month <- merged_2024 %>% 
+  group_by(member_casual, ride_month) %>% 
+  summarise(mean = mean(ride_time_min))
+
+as_tibble(ride_time_month)
+```
+
+```{r}
+#calculate count of rides by month and user type
+num_rides_month <- merged_2024 %>% 
+  count(member_casual, ride_month, name = "num_rides")
+
+as_tibble(num_rides_month)
+```
+
+```{r}
+#find top 20 start stations
+top_stations <- merged_2024 %>% 
+  count(member_casual, start_station_name, name = "station_count") %>% 
+  arrange(desc(station_count)) %>% 
+  filter(!is.na(start_station_name)) %>% 
+  group_by(member_casual) %>% 
+  top_n(20, station_count)
+
+as_tibble(top_stations)
+```
+
+```{r}
+#Bike type usage between casual and member riders
+bike_type <- merged_2024 %>% 
+  group_by(member_casual, rideable_type) %>% 
+  summarize(count = n())
+
+as_tibble(bike_type)
+```
+
+```{r}
+#Ride counts by day of the week
+table(merged_2024$day_of_week)
+
+day_count <- merged_2024 %>% 
+    group_by(member_casual, day_of_week) %>% 
+    summarize(ride_count = n())
+
+as_tibble(day_count)
+```
+
+```{r}
+#ride count by month
+month_count <- merged_2024 %>% 
+  group_by(member_casual, ride_month) %>% 
+  summarize(ride_count = n())
+
+as_tibble(month_count)
+```
+
+# Share
+
+This demonstrates that casual members have a higher ride duration throughout the year compared to members. This suggests that casual riders are using the bikes more for leisure and are opting more for the full-day passes. The months with the highest ride duration are the summer months May through July. The winter months Nov - Jan have the lowest ride duration. For members, the increase in ride duration during peak months do not increase as much casual riders, meaning they are more consistent with their ride duration throughout the year. 
+
+```{r}
+#plots the average ride duration by month between casual and members
+ggplot(ride_time_month, aes(x = ride_month, y = mean, color = member_casual, group = member_casual)) +
+  geom_line() + 
+  labs(title = "Average Ride Duration by Month",
+       x = "Month",
+       y = "Average Ride Duration (minutes)",
+       color = "User Type") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Although members are taking shorter rides, they are taking more rides than casual users. Number of rides increase for all users with the highest months in June - September with a sharp dip in rides from Nov to Jan. 
+```{r}
+  ggplot(month_count, aes(x = ride_month, y = ride_count, , color = member_casual, group = member_casual)) + 
+    geom_line() +
+    scale_y_continuous(labels = comma) +
+    labs(title = "Ride Count By Month and User Type - 2024", 
+         x = "Day of the Week", 
+         y = "Ride Count",
+         fill = "User Type") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+On a weekly basis, members take more rides on the weekday and casual members take more rides on the weekends. 
+```{r}
+  ggplot(day_count, aes(x = day_of_week, y = ride_count, , color = member_casual, group = member_casual)) + 
+    geom_line() +
+    scale_y_continuous(labels = comma) +
+    labs(title = "Ride Count By Day of the Week and User Type - 2024", 
+         x = "Day of the Week", 
+         y = "Ride Count",
+         fill = "User Type") +
+    theme_minimal() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+The top 20 start stations for casual members show they are starting their rides around popular tourist areas. 
+```{r}
+#Bar chart for top start stations between casual and member riders
+ggplot(top_stations, aes(x = reorder(start_station_name, station_count), y = station_count, fill = member_casual)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~ member_casual, scales = "free_y") +
+  labs(title = "Top 20 Stations by User Type - 2024", 
+       x = "Station Name", 
+       y = "Ride Count",
+       fill="User Type") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Most popular bike types for all memebers are the electric bikes followed by classic bikes. Electric scooters are not that popular but will need to investigate if this is due to availability. 
+```{r}
+#Barchart of bike type usage between users
+ggplot(bike_type, aes(x = rideable_type, y = count, fill = member_casual)) +
+  geom_col() +
+  scale_y_continuous(labels = comma) +
+  facet_wrap(~member_casual) + 
+  labs(title = "Bike Type Usage Between User Types - 2024", 
+       x = "Bike Type", 
+       y = "Ride Count",
+       fill = "User Type")+
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+# Recommendation
+1. Concentrate marketing efforts geared towards casual riders at popular stations.
+
+- Offer discounts for annual memberships at these locations
+- Consider offering discounted full-day membership packs for casual users who do not live in the city, but come often enough for leisure on the weekends. For exaample, 10 pack of full day rides. 
+2. 
+
+
+
