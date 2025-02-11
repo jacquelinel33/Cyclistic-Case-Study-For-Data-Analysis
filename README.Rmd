@@ -3,7 +3,6 @@
 title: "Cyclistic Case Study"
 output:
   output: rmarkdown::github_document
-  pdf_document: default
 date: "2025-02-06"
 ---
 
