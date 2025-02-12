@@ -1,4 +1,4 @@
-Your Document Title
+Cyclistic Case Study
 ================
 2025-02-06
 
@@ -449,6 +449,47 @@ as_tibble(month_count)
 
 # Share
 
+``` r
+merged_2024_filtered_ride_time <- merged_2024 %>%
+  filter(ride_time_min <= 70)
+
+ggplot(merged_2024_filtered_ride_time, aes(x = ride_time_min, fill=member_casual)) +
+  geom_histogram(binwidth = 5) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous() +
+  theme_minimal() +
+   labs(title = "Distribution of Ride Duration by Member and Casual Users",
+       x = "Ride Duration",
+       y = "Count",
+      color = "User Type")
+```
+
+![](plots/unnamed-chunk-16-1.png)<!-- -->
+
+``` r
+quantile(merged_2024$ride_time_min, probs = c(0.95, 0.99, 0.999), na.rm = TRUE)
+```
+
+    ## Time differences in mins
+    ##       95%       99%     99.9% 
+    ##  42.23854  94.68717 333.38253
+
+``` r
+merged_2024_filtered_ride_time <- merged_2024 %>%
+  filter(ride_time_min <= 42.2)
+
+ggplot(merged_2024_filtered_ride_time, aes(ride_time_min, color=member_casual)) + 
+  geom_density() +
+  xlim(0, 42.2) +
+  theme_minimal() +
+  labs(title = "Ride Duration Density by Member and Casual Users",
+       x = "Ride Duration",
+       y = "Density",
+      color = "User Type")
+```
+
+![](plots/unnamed-chunk-17-1.png)<!-- -->
+
 This demonstrates that casual members have a higher ride duration
 throughout the year compared to members. This suggests that casual
 riders are using the bikes more for leisure and are opting more for the
@@ -473,7 +514,7 @@ ggplot(ride_time_month, aes(x = ride_month, y = mean, color = member_casual, gro
     ## Don't know how to automatically pick scale for object of type <difftime>.
     ## Defaulting to continuous.
 
-![](plots/unnamed-chunk-16-1.png)<!-- -->
+![](plots/unnamed-chunk-18-1.png)<!-- -->
 
 Although members are taking shorter rides, they are taking more rides
 than casual users. Number of rides increase for all users with the
@@ -492,7 +533,7 @@ Jan. 
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](plots/unnamed-chunk-17-1.png)<!-- -->
+![](plots/unnamed-chunk-19-1.png)<!-- -->
 
 On a weekly basis, members take more rides on the weekday and casual
 members take more rides on the weekends.
@@ -509,7 +550,7 @@ members take more rides on the weekends.
    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](plots/unnamed-chunk-18-1.png)<!-- -->
+![](plots/unnamed-chunk-20-1.png)<!-- -->
 
 The top 20 start stations for casual members show they are starting
 their rides around popular tourist areas.
@@ -528,7 +569,7 @@ ggplot(top_stations, aes(x = reorder(start_station_name, station_count), y = sta
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](plots/unnamed-chunk-19-1.png)<!-- -->
+![](plots/unnamed-chunk-21-1.png)<!-- -->
 
 Most popular bike types for all members are the electric bikes followed
 by classic bikes. Electric scooters are not that popular but will need
@@ -552,7 +593,7 @@ bike_type_plot <- ggplot(bike_type, aes(x = rideable_type, y = count, fill = mem
 bike_type_plot
 ```
 
-![](plots/unnamed-chunk-20-1.png)<!-- -->
+![](plots/unnamed-chunk-22-1.png)<!-- -->
 
 # Recommendation
 

@@ -1,6 +1,6 @@
 
 ---
-title: "Your Document Title"
+title: "Cyclistic Case Study"
 output: github_document
 date: "2025-02-06"
 ---
@@ -9,7 +9,7 @@ date: "2025-02-06"
 library(knitr)
 
 # Automatically save plots in the "plots/" folder
-knitr::opts_chunk$set(fig.path = "plots/", fig.width = 8, fig.height = 4.5, echo = TRUE)
+knitr::opts_chunk$set(fig.path = "plots/", fig.width = 10, fig.height = 7.7, echo = TRUE)
 ```
 
 ## Introduction
@@ -176,6 +176,40 @@ as_tibble(month_count)
 ```
 
 # Share
+```{r}
+
+merged_2024_filtered_ride_time <- merged_2024 %>%
+  filter(ride_time_min <= 70)
+
+ggplot(merged_2024_filtered_ride_time, aes(x = ride_time_min, fill=member_casual)) +
+  geom_histogram(binwidth = 5) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous() +
+  theme_minimal() +
+   labs(title = "Distribution of Ride Duration by Member and Casual Users",
+       x = "Ride Duration",
+       y = "Count",
+      color = "User Type")
+```
+
+```{r}
+quantile(merged_2024$ride_time_min, probs = c(0.95, 0.99, 0.999), na.rm = TRUE)
+
+merged_2024_filtered_ride_time <- merged_2024 %>%
+  filter(ride_time_min <= 42.2)
+
+ggplot(merged_2024_filtered_ride_time, aes(ride_time_min, color=member_casual)) + 
+  geom_density() +
+  xlim(0, 42.2) +
+  theme_minimal() +
+  labs(title = "Ride Duration Density by Member and Casual Users",
+       x = "Ride Duration",
+       y = "Density",
+      color = "User Type")
+
+
+```
+
 
 This demonstrates that casual members have a higher ride duration throughout the year compared to members. This suggests that casual riders are using the bikes more for leisure and are opting more for the full-day passes. The months with the highest ride duration are the summer months May through July. The winter months Nov - Jan have the lowest ride duration. For members, the increase in ride duration during peak months do not increase as much casual riders, meaning they are more consistent with their ride duration throughout the year. 
 
