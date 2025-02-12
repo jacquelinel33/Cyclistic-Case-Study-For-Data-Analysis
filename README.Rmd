@@ -251,6 +251,23 @@ On a weekly basis, members take more rides on the weekday and casual members tak
    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+```{r}
+#time of day analysis
+merged_2024$start_time_only <- as.POSIXct(format(merged_2024$started_at, format = "%H:%M:%S"), format = "%H:%M:%S")
+```
+```{r}
+ggplot(merged_2024, aes(x = start_time_only, fill = member_casual)) +
+  geom_histogram(binwidth = 15 * 60, alpha = 0.6, position = "identity") +  
+  scale_x_datetime(labels = scales::time_format("%H:%M")) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Ride Start Time Distribution", 
+    x = "Time of Day", 
+    y = "Ride Count",
+    color = "User Type")+
+  theme_minimal()
+```
+
 The top 20 start stations for casual members show they are starting their rides around popular tourist areas. 
 ```{r}
 #Bar chart for top start stations between casual and member riders

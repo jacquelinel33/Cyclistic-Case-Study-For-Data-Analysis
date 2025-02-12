@@ -552,6 +552,26 @@ members take more rides on the weekends.
 
 ![](plots/unnamed-chunk-20-1.png)<!-- -->
 
+``` r
+#time of day analysis
+merged_2024$start_time_only <- as.POSIXct(format(merged_2024$started_at, format = "%H:%M:%S"), format = "%H:%M:%S")
+```
+
+``` r
+ggplot(merged_2024, aes(x = start_time_only, fill = member_casual)) +
+  geom_histogram(binwidth = 15 * 60, alpha = 0.6, position = "identity") +  
+  scale_x_datetime(labels = scales::time_format("%H:%M")) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Ride Start Time Distribution", 
+    x = "Time of Day", 
+    y = "Ride Count",
+    color = "User Type")+
+  theme_minimal()
+```
+
+![](plots/unnamed-chunk-22-1.png)<!-- -->
+
 The top 20 start stations for casual members show they are starting
 their rides around popular tourist areas.
 
@@ -569,7 +589,7 @@ ggplot(top_stations, aes(x = reorder(start_station_name, station_count), y = sta
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](plots/unnamed-chunk-21-1.png)<!-- -->
+![](plots/unnamed-chunk-23-1.png)<!-- -->
 
 Most popular bike types for all members are the electric bikes followed
 by classic bikes. Electric scooters are not that popular but will need
@@ -593,7 +613,7 @@ bike_type_plot <- ggplot(bike_type, aes(x = rideable_type, y = count, fill = mem
 bike_type_plot
 ```
 
-![](plots/unnamed-chunk-22-1.png)<!-- -->
+![](plots/unnamed-chunk-24-1.png)<!-- -->
 
 # Recommendation
 
