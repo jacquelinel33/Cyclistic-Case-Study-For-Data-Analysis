@@ -1,4 +1,4 @@
-Cyclistic Case Study
+Your Document Title
 ================
 2025-02-06
 
@@ -39,235 +39,33 @@ load packages
 
 ``` r
 library(tidyverse)
-```
-
-    ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-    ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
-    ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
-    ## ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
-    ## ✔ lubridate 1.9.4     ✔ tidyr     1.3.1
-    ## ✔ purrr     1.0.2     
-    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-    ## ✖ dplyr::filter() masks stats::filter()
-    ## ✖ dplyr::lag()    masks stats::lag()
-    ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-
-``` r
 library(lubridate)
 library(ggplot2)
 library(readr)
 library(janitor)
-```
-
-    ## 
-    ## Attaching package: 'janitor'
-    ## 
-    ## The following objects are masked from 'package:stats':
-    ## 
-    ##     chisq.test, fisher.test
-
-``` r
 library(geosphere)
 library(dplyr)
 library(pastecs)
-```
-
-    ## 
-    ## Attaching package: 'pastecs'
-    ## 
-    ## The following objects are masked from 'package:dplyr':
-    ## 
-    ##     first, last
-    ## 
-    ## The following object is masked from 'package:tidyr':
-    ## 
-    ##     extract
-
-``` r
 library(scales)
 ```
-
-    ## 
-    ## Attaching package: 'scales'
-    ## 
-    ## The following object is masked from 'package:purrr':
-    ## 
-    ##     discard
-    ## 
-    ## The following object is masked from 'package:readr':
-    ## 
-    ##     col_factor
 
 <br> Load data frames. I will be using the most recent data from the
 last 12 months at the time of this report.
 
 ``` r
 JAN_2024 <- read_csv("Data/202401-divvy-tripdata.csv")
-```
-
-    ## Rows: 144873 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 FEB_2024 <- read_csv("Data/202402-divvy-tripdata.csv")
-```
-
-    ## Rows: 223164 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 MAR_2024 <- read_csv("Data/202403-divvy-tripdata.csv")
-```
-
-    ## Rows: 301687 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 APR_2024 <- read_csv("Data/202404-divvy-tripdata.csv")
-```
-
-    ## Rows: 415025 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 MAY_2024 <- read_csv("Data/202405-divvy-tripdata.csv")
-```
-
-    ## Rows: 609493 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 JUN_2024 <- read_csv("Data/202406-divvy-tripdata.csv")
-```
-
-    ## Rows: 710721 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 JUL_2024 <- read_csv("Data/202407-divvy-tripdata.csv")
-```
-
-    ## Rows: 748962 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 AUG_2024 <- read_csv("Data/202408-divvy-tripdata.csv")
-```
-
-    ## Rows: 755639 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 SEP_2024 <- read_csv("Data/202409-divvy-tripdata.csv")
-```
-
-    ## Rows: 821276 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 NOV_2024 <- read_csv("Data/202411-divvy-tripdata.csv")
-```
-
-    ## Rows: 335075 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 OCT_2024 <- read_csv("Data/202410-divvy-tripdata.csv")
-```
-
-    ## Rows: 616281 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 DEC_2024 <- read_csv("Data/202412-divvy-tripdata.csv")
 ```
-
-    ## Rows: 178372 Columns: 13
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
-    ## dbl  (4): start_lat, start_lng, end_lat, end_lng
-    ## dttm (2): started_at, ended_at
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ## Process
 
@@ -527,12 +325,12 @@ top_stations <- merged_2024 %>%
   arrange(desc(station_count)) %>% 
   filter(!is.na(start_station_name)) %>% 
   group_by(member_casual) %>% 
-  top_n(20, station_count)
+  top_n(10, station_count)
 
 as_tibble(top_stations)
 ```
 
-    ## # A tibble: 40 × 3
+    ## # A tibble: 20 × 3
     ##    member_casual start_station_name                 station_count
     ##    <chr>         <chr>                                      <int>
     ##  1 casual        Streeter Dr & Grand Ave                    50903
@@ -545,7 +343,16 @@ as_tibble(top_stations)
     ##  8 casual        DuSable Lake Shore Dr & North Blvd         23033
     ##  9 casual        Millennium Park                            22498
     ## 10 casual        Shedd Aquarium                             21020
-    ## # ℹ 30 more rows
+    ## 11 member        Wells St & Concord Ln                      20667
+    ## 12 member        Wells St & Elm St                          20489
+    ## 13 member        Clinton St & Jackson Blvd                  20301
+    ## 14 member        Dearborn St & Erie St                      19484
+    ## 15 member        Canal St & Madison St                      19076
+    ## 16 member        State St & Chicago Ave                     19054
+    ## 17 casual        Dusable Harbor                             18390
+    ## 18 casual        Theater on the Lake                        16773
+    ## 19 casual        Michigan Ave & 8th St                      13456
+    ## 20 casual        Adler Planetarium                          12879
 
 ``` r
 #Bike type usage between casual and member riders
@@ -740,7 +547,7 @@ bike_type_plot <- ggplot(bike_type, aes(x = rideable_type, y = count, fill = mem
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggsave("plots/bike_type_usage.png", plot = bike_type_plot, width = 6, height = 4, dpi = 300)
+#ggsave("plots/bike_type_usage.png", plot = bike_type_plot, width = 6, height = 4, dpi = 300)
 
 bike_type_plot
 ```
