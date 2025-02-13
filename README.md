@@ -49,8 +49,8 @@ library(pastecs)
 library(scales)
 ```
 
-<br> Load data frames. I will be using the most recent data from the
-last 12 months at the time of this report.
+<br> Load data frames. I will be using the 2024 data, which is the most
+recent data from the last 12 months at the time of this report.
 
 ``` r
 JAN_2024 <- read_csv("Data/202401-divvy-tripdata.csv")
@@ -134,18 +134,18 @@ compare_df_cols(JAN_2024, FEB_2024, MAR_2024, APR_2024, MAY_2024, JUN_2024, JUL_
     ## 12       character
     ## 13 POSIXct, POSIXt
 
-<br> Merge all 12 data frames for 2024 together.
+<br> Merge all 12 data frames for 2024 together to consolidate analysis.
 
 ``` r
 #merge 2024 data frames together
 merged_2024 <- bind_rows(JAN_2024, FEB_2024, MAR_2024, APR_2024, MAY_2024, JUN_2024, JUL_2024, AUG_2024, SEP_2024, OCT_2024, NOV_2024, DEC_2024)
 ```
 
-<br> Count the number of n/a values in each column. This results in
-about 18-19% of missing data from station names and station id. I will
-not be removing the data because it is non-essential data for this
-analysis that will mainly focus on ride patterns rather than specific
-stations.
+<br> Count the number of n/a values in each column to assess data
+completeness. This results in approximately ~18-19% of missing data from
+the station names and station id columns. Since this information is not
+essential for analyzing ride times, ride counts, or seasonality, I have
+chosen to retain the incomplete data.
 
 ``` r
 #count n/a values in column
@@ -161,8 +161,9 @@ colSums(is.na(merged_2024))
     ##      member_casual 
     ##                  0
 
-<br> Add column to calculate a trips ride time in minutes by finding the
-time difference between started_at and ended_at column.
+<br> Add a new column that calculates a trips ride time in minutes by
+finding the time difference between started_at and ended_at column. I’ve
+also added a date
 
 ``` r
 merged_2024 <- merged_2024 %>%
@@ -170,11 +171,12 @@ merged_2024 <- merged_2024 %>%
   mutate(ride_time_min = difftime(ended_at, started_at, units = "min")) %>%  #add column that calculates the ride time in minutes
   arrange(desc(ride_time_min)) %>% 
   mutate(day_of_week = wday(started_at, label = TRUE, abbr = FALSE)) %>% #add date_of_week column 
-  mutate(ride_month = month(started_at, label = TRUE, abbr = FALSE)) #add ride_month column 
+  mutate(ride_month = month(started_at, label = TRUE, abbr = FALSE)) %>% #add ride_month column  %>% 
+  mutate(start_time_only = hms(format(started_at, format = "%H:%M:%S")))
 ```
 
-\#remove negative values in ride_time_min column and ride times greater
-than 24 hrs.
+Remove negative values in ride_time_min column and any ride times
+greater than 24 hrs. These values are
 
 ``` r
 #remove negative values in ride_time_min column and ride times greater than 24 hrs.
@@ -182,7 +184,7 @@ merged_2024 <- merged_2024 %>%
   filter(ride_time_min > 0, ride_time_min <= 1440)
 ```
 
-# Analyze
+## Analyze
 
 Perform description analysis on ride_time_min column across all users.
 
@@ -191,8 +193,8 @@ Perform description analysis on ride_time_min column across all users.
 - Max ride time is 1439 min. Rides longer than 1440 min (24 hrs) have
   been removed from the data.
 - Median ride time is 9.70 min. Many users are taking shorter trips.
-- Mean is 15.40 which is larger than the medium. Data is right skewed
-  with users with very long ride times.
+- Mean is 15.40 which is larger than the medium. The data is
+  right-skewed due to users with exceptionally long ride times.
 
 ``` r
 round(stat.desc(merged_2024$ride_time_min), 2)
@@ -266,6 +268,8 @@ round(stat.desc(merged_2024$ride_time_min[merged_2024$member_casual == "casual"]
     ## std.dev            42.46
     ## coef.var            2.03
 
+Calculate the average ride time by month and user type.
+
 ``` r
 #calculate avg ride_time by month and user type
 ride_time_month <- merged_2024 %>% 
@@ -295,8 +299,9 @@ as_tibble(ride_time_month)
     ## 10 casual        October    19.72420 mins
     ## # ℹ 14 more rows
 
+Calculate the number of rides by month and user type.
+
 ``` r
-#calculate count of rides by month and user type
 num_rides_month <- merged_2024 %>% 
   count(member_casual, ride_month, name = "num_rides")
 
@@ -318,8 +323,9 @@ as_tibble(num_rides_month)
     ## 10 casual        October       215933
     ## # ℹ 14 more rows
 
+Find the top 10 start stations for member and casual users.
+
 ``` r
-#find top 20 start stations
 top_stations <- merged_2024 %>% 
   count(member_casual, start_station_name, name = "station_count") %>% 
   arrange(desc(station_count)) %>% 
@@ -354,8 +360,10 @@ as_tibble(top_stations)
     ## 19 casual        Michigan Ave & 8th St                      13456
     ## 20 casual        Adler Planetarium                          12879
 
+Find the count of bike usage based on bike type between casual and
+member riders.
+
 ``` r
-#Bike type usage between casual and member riders
 bike_type <- merged_2024 %>% 
   group_by(member_casual, rideable_type) %>% 
   summarize(count = n())
@@ -378,8 +386,11 @@ as_tibble(bike_type)
     ## 5 member        electric_bike    1888699
     ## 6 member        electric_scooter   59122
 
+Calculate ride counts by day of the week among all users as well as
+between user type.
+
 ``` r
-#Ride counts by day of the week
+#all users
 table(merged_2024$day_of_week)
 ```
 
@@ -388,6 +399,7 @@ table(merged_2024$day_of_week)
     ##    785568    787244    802204    878586    834701    840501    923445
 
 ``` r
+#member vs. casual
 day_count <- merged_2024 %>% 
     group_by(member_casual, day_of_week) %>% 
     summarize(ride_count = n())
@@ -418,6 +430,8 @@ as_tibble(day_count)
     ## 13 member        Friday          525583
     ## 14 member        Saturday        479440
 
+Calculate number of ride by month between user type.
+
 ``` r
 #ride count by month
 month_count <- merged_2024 %>% 
@@ -447,24 +461,18 @@ as_tibble(month_count)
     ## 10 casual        October        215933
     ## # ℹ 14 more rows
 
-# Share
+## Share
 
-``` r
-merged_2024_filtered_ride_time <- merged_2024 %>%
-  filter(ride_time_min <= 70)
+#### Ride Duration
 
-ggplot(merged_2024_filtered_ride_time, aes(x = ride_time_min, fill=member_casual)) +
-  geom_histogram(binwidth = 5) +
-  scale_y_continuous(labels = comma) +
-  scale_x_continuous() +
-  theme_minimal() +
-   labs(title = "Distribution of Ride Duration by Member and Casual Users",
-       x = "Ride Duration",
-       y = "Count",
-      color = "User Type")
-```
-
-![](plots/unnamed-chunk-16-1.png)<!-- -->
+For members, the higher density peak at ~4 minutes suggests they
+frequently take short, consistent rides. In contrast, casual users have
+a lower density peak at ~7 minutes, indicating longer rides on average
+but with greater variability in ride duration. Both groups exhibit a
+right-skewed distribution, with casual users’ distribution being
+slightly higher in the right tail. This suggests that while longer rides
+occur in both groups, a higher proportion of casual users take extended
+rides.
 
 ``` r
 quantile(merged_2024$ride_time_min, probs = c(0.95, 0.99, 0.999), na.rm = TRUE)
@@ -488,16 +496,16 @@ ggplot(merged_2024_filtered_ride_time, aes(ride_time_min, color=member_casual)) 
       color = "User Type")
 ```
 
-![](plots/unnamed-chunk-17-1.png)<!-- -->
+![](plots/unnamed-chunk-16-1.png)<!-- -->
 
-This demonstrates that casual members have a higher ride duration
-throughout the year compared to members. This suggests that casual
-riders are using the bikes more for leisure and are opting more for the
-full-day passes. The months with the highest ride duration are the
-summer months May through July. The winter months Nov - Jan have the
-lowest ride duration. For members, the increase in ride duration during
-peak months do not increase as much casual riders, meaning they are more
-consistent with their ride duration throughout the year.
+On a month to month basis, casual users on average take longer rides
+than members. This suggests that casual riders are using the bikes for
+leisure and are more likely to opt for full-day passes. The months with
+the highest ride duration for both casual users and members are the
+summer months May through July. The winter months Nov through Jan have
+the lowest ride duration. For members, ride duration increases less
+dramatically during peak months compared to casual riders, indicating
+more consistent usage throughout the year.
 
 ``` r
 #plots the average ride duration by month between casual and members
@@ -508,18 +516,16 @@ ggplot(ride_time_month, aes(x = ride_month, y = mean, color = member_casual, gro
        y = "Average Ride Duration (minutes)",
        color = "User Type") +
   theme_minimal() +
+  scale_y_continuous() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-    ## Don't know how to automatically pick scale for object of type <difftime>.
-    ## Defaulting to continuous.
-
-![](plots/unnamed-chunk-18-1.png)<!-- -->
-
-Although members are taking shorter rides, they are taking more rides
-than casual users. Number of rides increase for all users with the
-highest months in June - September with a sharp dip in rides from Nov to
-Jan. 
+![](plots/unnamed-chunk-17-1.png)<!-- --> \#### Seasonality Although
+members are taking shorter rides, they are taking more rides than casual
+users. The number of rides increases for all users from June to
+September, followed by a sharp decline from November to January. For
+both groups, this shows that seasonality makes an impact on number of
+rides for both groups.
 
 ``` r
   ggplot(month_count, aes(x = ride_month, y = ride_count, , color = member_casual, group = member_casual)) + 
@@ -533,10 +539,15 @@ Jan. 
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](plots/unnamed-chunk-19-1.png)<!-- -->
+![](plots/unnamed-chunk-18-1.png)<!-- -->
+
+#### Weekday vs. Weekend Ridership
 
 On a weekly basis, members take more rides on the weekday and casual
-members take more rides on the weekends.
+members take more rides on the weekends. For members, Wednesday has the
+highest ride count, with Saturday being the lowest. For casual user, we
+see the opposite. Saturday had the highest ride count with Tuesday
+having the lowest.
 
 ``` r
   ggplot(day_count, aes(x = day_of_week, y = ride_count, , color = member_casual, group = member_casual)) + 
@@ -550,29 +561,37 @@ members take more rides on the weekends.
    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](plots/unnamed-chunk-20-1.png)<!-- -->
+![](plots/unnamed-chunk-19-1.png)<!-- -->
 
-``` r
-#time of day analysis
-merged_2024$start_time_only <- as.POSIXct(format(merged_2024$started_at, format = "%H:%M:%S"), format = "%H:%M:%S")
-```
+Members tend to start their rides between 8:00 AM and 10:00 AM before
+experiencing a slight dip. Around noon, ride activity begins to increase
+again, peaking at approximately 5:00 PM. In contrast, casual riders do
+not exhibit noticeable spikes in the morning. Instead, their ride counts
+steadily rise from 8:00 AM, reaching a peak around 5:00 PM. The busiest
+period for casual riders is between 2:00 PM and 7:00 PM.
 
 ``` r
 ggplot(merged_2024, aes(x = start_time_only, fill = member_casual)) +
-  geom_histogram(binwidth = 15 * 60, alpha = 0.6, position = "identity") +  
-  scale_x_datetime(labels = scales::time_format("%H:%M")) +
-  scale_y_continuous(labels = comma) +
+  geom_histogram(binwidth = 15 * 60, alpha = 0.4, position = "identity") +
+  scale_x_time(
+    breaks = seq(0, 24 * 60 * 60, by = 2 * 60 * 60),  # 2-hour breaks (in seconds)
+    labels = scales::time_format("%H:%M")
+  ) +
+  scale_y_continuous(labels = scales::comma) +
   labs(
-    title = "Ride Start Time Distribution", 
-    x = "Time of Day", 
+    title = "Ride Start Time Distribution",
+    x = "Time of Day",
     y = "Ride Count",
-    color = "User Type")+
+    fill = "User Type"
+  ) +
   theme_minimal()
 ```
 
-![](plots/unnamed-chunk-22-1.png)<!-- -->
+![](plots/unnamed-chunk-20-1.png)<!-- -->
 
-The top 20 start stations for casual members show they are starting
+#### Top stations
+
+The top 10 start stations for casual members show they are starting
 their rides around popular tourist areas.
 
 ``` r
@@ -589,14 +608,17 @@ ggplot(top_stations, aes(x = reorder(start_station_name, station_count), y = sta
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](plots/unnamed-chunk-23-1.png)<!-- -->
+![](plots/unnamed-chunk-21-1.png)<!-- -->
 
-Most popular bike types for all members are the electric bikes followed
-by classic bikes. Electric scooters are not that popular but will need
-to investigate if this is due to availability.
+#### Bike Type
+
+The most used bike types for all members are the electric bikes followed
+by classic bikes. Electric scooters are the least popular, but there
+will need to be further investigation to see if this is due to
+availability of bike types.
 
 ``` r
-#Barchart of bike type usage between users
+#Bar chart of bike type usage between users
 bike_type_plot <- ggplot(bike_type, aes(x = rideable_type, y = count, fill = member_casual)) +
   geom_col() +
   scale_y_continuous(labels = comma) +
@@ -613,16 +635,51 @@ bike_type_plot <- ggplot(bike_type, aes(x = rideable_type, y = count, fill = mem
 bike_type_plot
 ```
 
-![](plots/unnamed-chunk-24-1.png)<!-- -->
+![](plots/unnamed-chunk-22-1.png)<!-- -->
 
-# Recommendation
+## Insight summary and recommendations
 
-1.  Concentrate marketing efforts geared towards casual riders at
-    popular stations.
+### 1. Seasonality Drives Demand:
 
-- Offer discounts for annual memberships at these locations
-- Consider offering discounted full-day membership packs for casual
-  users who do not live in the city, but come often enough for leisure
-  on the weekends. For exaample, 10 pack of full day rides.
+#### Summary:
 
-2.  
+- Both casual and member riders increase usage in the summer (May–July)
+  and drop significantly in winter (Nov–Jan).
+- Casual riders show more extreme seasonal fluctuations, while members
+  maintain a more consistent level of use.
+
+#### Recommendation:
+
+- Offer discounted rates for memberships during off-peak seasons
+- Provide tips and messaging on how to prepare for rides in the winter
+  months.
+
+### 2. Casual Riders Take Longer Trips:
+
+#### Summary:
+
+- Casual riders have a higher average ride time (20.93 min vs. 12.02 min
+  for members) and a higher standard deviation in ride duration.
+- This suggests that casual riders are using bikes more for leisure,
+  sightseeing, or long trips, while members likely use bikes for
+  commuting or short, frequent trips.
+
+#### Recommendation:
+
+- Offer discounted full-day membership packs for frequent casual riders.
+  For example, 10-pack of full day rides.
+- Consider partnerships with local tour groups or create a multi-day
+  sightseeing guide to complement full-day ride plans.
+
+### 3. Members Ride More Often, Especially on Weekdays:
+
+#### Summary:
+
+- Members account for 63.3% of total rides despite taking shorter trips.
+- Their rides peak on weekdays, especially Wednesdays, suggesting they
+  use the service for commuting.
+- Casual riders peak on weekends, indicating more recreational use.
+
+#### Recommendation:
+
+- Introduce a weekend only membership plan at a discounted rate.
