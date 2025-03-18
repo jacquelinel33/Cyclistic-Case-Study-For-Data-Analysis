@@ -682,4 +682,4 @@ bike_type_plot
 
 #### Recommendation:
 
-- Introduce a weekend only membership plan at a discounted rate.
+- Introduce a discounted weekend-only membership plan to better align with casual riders' primary usage patterns.
